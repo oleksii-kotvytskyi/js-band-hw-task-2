@@ -10,7 +10,9 @@ function getTruckListPromise() {
     setTimeout(() => {
       if(oneMoreRequest) {
         countOfRequestTLP++;
-        reject();
+        return getTruckListPromise()
+                  .then(data => resolve(data))
+                  .catch(err => reject(err));
       } else if(callErrForUser) {
         countOfRequestTLP = 0;
         reject({
@@ -28,13 +30,7 @@ function getTruckListPromise() {
         });
       }
     }, 1000);
-  }).then(data => data)
-    .catch(error => {
-      if(oneMoreRequest) {
-        return getTruckListPromise();
-      }
-      return new Promise((_, reject) => reject(error));
-    })
+  })
 }
 
 

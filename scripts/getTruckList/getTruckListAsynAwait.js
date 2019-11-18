@@ -11,7 +11,9 @@ async function getTruckListAsynAwait() {
     setTimeout(() => {
       if(oneMoreRequest) {
         countOfRequestTLAA++;
-        reject();
+        return getTruckListAsynAwait()
+                  .then(data => resolve(data))
+                  .catch(err => reject(err));
       } else if (callErrorForUser) {
         reject({
           data: null,
@@ -29,13 +31,7 @@ async function getTruckListAsynAwait() {
         });
       }
     }, 1000)
-  }).then(data => data)
-    .catch(error => {
-      if(oneMoreRequest) {
-        return getTruckListAsynAwait();
-      }
-      return new Promise((_,reject) => reject(error));
-    });
+  })
     // here we can do something with result 
   return result;
 }
