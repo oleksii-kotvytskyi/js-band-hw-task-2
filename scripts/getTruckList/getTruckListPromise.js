@@ -1,39 +1,30 @@
-import db  from '../../TrucksDB/db.json';
-let countOfRequestTLP = 0;
+import {
+  getTruckIds,
+  getTruckById
+} from '../script';
+
 
 function getTruckListPromise() {
-  let isError = Math.ceil(Math.random()*1000) < 100;
-  let oneMoreRequest = isError && countOfRequestTLP < 2;
-  let callErrForUser = isError && countOfRequestTLP >= 2;
-
-  return new Promise((resolve,reject) => {
+  return new Promise((resolve, reject) => {
     setTimeout(() => {
-      if(oneMoreRequest) {
-        countOfRequestTLP++;
-        return getTruckListPromise()
-                  .then(data => resolve(data))
-                  .catch(err => reject(err));
-      } else if(callErrForUser) {
-        countOfRequestTLP = 0;
-        reject({
-          data: null,
-          status: 429,
-          message: "Promise - Internal Error",
-          countRequests: countOfRequestTLP
-        });
-      } else {
-        resolve({
-          data: db.TRUCKS,
-          status: 200,
-          message: 'Promise request succes',
-          countRequests: countOfRequestTLP
-        });
-      }
+      getTruckIds().then(idsList => {
+        Promise.all(idsList.map(id => 
+          getTruckById(id).catch(() => 
+            getTruckById(id).catch(() => 
+              getTruckById(id).catch(() => console.log("Promise - To much request for id: ", id))
+              )
+            )
+          )
+        ).then(truckList => {
+          let data = truckList.filter(truck => !!truck);
+          data.length ? resolve(data) : reject("Promise - Internal Error");
+        })
+      })
     }, 1000);
   })
 }
 
 
 getTruckListPromise()
-  .then(response => console.log(response))
-  .catch(error =>  console.log(error.message));
+  .then(data => console.log('Promise data: ',data))
+  .catch(error => console.log(error));

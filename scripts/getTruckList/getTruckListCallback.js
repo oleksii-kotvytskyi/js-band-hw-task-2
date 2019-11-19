@@ -1,30 +1,27 @@
-import db  from '../../TrucksDB/db.json';
-let countOfRequestTLC = 0;
+import {
+  getTruckIds,
+  getTruckById
+} from '../script';
 
 function getTruckListCallback(callback) {
   setTimeout(() => {
-    const isError = Math.ceil(Math.random()*1000) < 100;
-    if(isError && countOfRequestTLC < 2) {
-      countOfRequestTLC++;
-      getTruckListCallback(callback);
-    } else if(isError && countOfRequestTLC >= 2) {
-      countOfRequestTLC = 0;
-       callback(null, {
-        data: null,
-        status: 429,
-        message: "Callback - Internal Error",
-        countRequests: countOfRequestTLP
-      });
-    } else {
-      callback({
-        data: db.TRUCKS,
-        status: 200,
-        message: 'Callback request succes',
-        countRequests: countOfRequestTLC
-      });
-    }
+    getTruckIds().then(idsList => {
+      Promise.all(idsList.map(id => 
+        getTruckById(id).catch(() => 
+          getTruckById(id).catch(() => 
+            getTruckById(id).catch(() => console.log("CallBack - To much request for id: ", id))
+            )
+          )
+        )
+      ).then(truckList => {
+        let data = truckList.filter(truck => !!truck);
+        return data.length ? callback(data) : callback(undefined, 'Callback - Internal Error');
+      })
+    })
   }, 1000);
 }
 
 
-getTruckListCallback((data, err) => data ? console.log(data) : console.log(err));
+getTruckListCallback(
+  (data, error) => data ? console.log("CB data: ", data) : console.log(error)
+);

@@ -2,7 +2,6 @@ import './getTruckList/getTruckListAsynAwait';
 import './getTruckList/getTruckListCallback';
 import './getTruckList/getTruckListPromise';
 
-
 function getTruckIdsCallback(callback) {
   setTimeout(() => {
       callback([1,2,5,9,67]);
@@ -17,7 +16,7 @@ function getTruckIds() {
 
 function getTruckByIdCallback(id, callback) {
   setTimeout(() => {
-      const isError = Math.ceil(Math.random()*1000) < 100;
+      const isError = Math.ceil(Math.random()*1000) < 400;
       if (isError) {
           return callback(undefined, "Internal error"); 
       }
@@ -43,3 +42,7 @@ getTruckById(67)
 
                 
 
+export {
+  getTruckIds,
+  getTruckById
+}
